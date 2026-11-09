@@ -40,12 +40,46 @@ docs/weekly/         주차별 시연 기록
 | 12/9 | 통합 점검 + 보강 | 전체 흐름 점검 | |
 | 12/16 | 최종 시연 | 카메라부터 ROS 2 토픽까지 | |
 
+## 브랜치
+
+역할(폴더)마다 브랜치 하나. **브랜치 이름 = 폴더 이름**, 그 브랜치에서는 그 폴더만 수정한다.
+
+| 브랜치 | 폴더 | 담당 |
+|---|---|---|
+| `main` | 전체 | 시연에 성공한 것만 합침. 직접 push 금지 |
+| `firmware` | `firmware/` | 동혁 |
+| `vision` | `vision/` | 동민 |
+| `ros2` | `ros2_ws/` | 민혁 |
+| `docs` | `docs/` | 동민 |
+
+**처음 한 번** (브랜치가 GitHub에 이미 있으면)
+```bash
+git clone https://github.com/yang-dongmin/Xiao.git
+cd Xiao
+git switch vision          # 자기 브랜치로 이동
+```
+
+**평소 작업**
+```bash
+git switch vision
+git pull origin main       # main 최신 내용 받기
+# 작업
+git add vision/
+git commit -m "11/18: XIAO 스트림 PC 수신 성공"
+git push
+```
+
+**main에 합치기** (시연 성공할 때마다)
+1. push하기 전에 `git pull origin main`으로 main을 먼저 받는다
+2. GitHub에서 Pull request 만들기: `vision` → `main`
+3. 팀원 1명이 확인하고 Merge. **"Delete branch"는 누르지 않는다** (계속 쓰는 브랜치)
+4. 수요일 시연에 성공하면 main에 태그 달기 (예: `week-1111`)
+
 ## 작업 규칙
 
-1. 작업 시작 전에 `git pull`
-2. **자기 폴더만** 수정 (남의 폴더를 고쳐야 하면 단톡방에 먼저 말하기)
-3. 시연에 성공하면 바로 커밋: `git commit -m "11/11 시연: 브라우저 스트리밍 성공"`
-4. Wi-Fi 비밀번호는 코드에 직접 쓰지 말고 `secrets.h` / `.env`에 따로 (깃에 안 올라감)
+1. **자기 브랜치에서 자기 폴더만** 수정 (남의 폴더를 고쳐야 하면 단톡방에 먼저 말하기)
+2. 공용 파일(`README.md`, `.gitignore`, `docs/PRD.md`)을 고칠 때도 단톡방에 먼저 말하기
+3. Wi-Fi 비밀번호는 코드에 직접 쓰지 말고 `secrets.h` / `.env`에 따로 (깃에 안 올라감)
 
 ## 참고 자료
 
