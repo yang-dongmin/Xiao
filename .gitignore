@@ -1,0 +1,45 @@
+# ===== 비밀 정보 (Wi-Fi 비밀번호 등) =====
+secrets.h
+.env
+.env.*
+!.env.example
+# secrets.example.h 는 예시 파일이라 올림
+
+# ===== 펌웨어 (PlatformIO / Arduino) =====
+.pio/
+.pioenvs/
+.piolibdeps/
+build/
+*.bin
+*.elf
+*.map
+
+# ===== ROS 2 (colcon 빌드 결과) =====
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# ===== AI 모델 · 결과물 (용량 큼) =====
+*.pt
+*.onnx
+*.tflite
+vision/output/
+*.mp4
+*.avi
+
+# ===== macOS / Windows =====
+.DS_Store
+Thumbs.db
+
+# ===== 에디터 =====
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
