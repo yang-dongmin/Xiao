@@ -42,15 +42,14 @@ docs/weekly/         주차별 시연 기록
 
 ## 브랜치
 
-역할(폴더)마다 브랜치 하나. **브랜치 이름 = 폴더 이름**, 그 브랜치에서는 그 폴더만 수정한다.
+역할마다 브랜치 하나. 그 브랜치에서는 표에 적힌 폴더만 수정한다.
 
 | 브랜치 | 폴더 | 담당 |
 |---|---|---|
 | `main` | 전체 | 시연에 성공한 것만 합침. 직접 push 금지 |
 | `firmware` | `firmware/` | 동혁 |
-| `vision` | `vision/` | 동민 |
+| `vision` | `vision/`, `docs/` | 동민 |
 | `ros2` | `ros2_ws/` | 민혁 |
-| `docs` | `docs/` | 동민 |
 
 **처음 한 번** (브랜치가 GitHub에 이미 있으면)
 ```bash
@@ -64,7 +63,7 @@ git switch vision          # 자기 브랜치로 이동
 git switch vision
 git pull origin main       # main 최신 내용 받기
 # 작업
-git add vision/
+git add vision/ docs/
 git commit -m "11/18: XIAO 스트림 PC 수신 성공"
 git push
 ```
