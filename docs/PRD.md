@@ -90,7 +90,11 @@
 | 발행 조건 | 사람이 탐지된 프레임만. 여러 명이면 신뢰도가 가장 높은 1명 ⚠️ |
 
 ### 5.3 `/camera/status`, `/camera/command` (선택)
-- `/camera/status`: `std_msgs/String` — `"streaming"`, `"disconnected"` 등 ⚠️
+- `/camera/status` (동민 → 민혁): `std_msgs/String`에 JSON. PC 프로그램이 1초마다 발행 (`stream_viewer.py --ros`)
+  ```json
+  {"state": "streaming", "source": "http://<보드IP>:81/stream", "fps": 14.2, "width": 320, "height": 240, "stamp": 1795437653.297}
+  ```
+  `state`: `streaming`(정상) · `disconnected`(스트림 끊김, 재연결 중) · `stopped`(프로그램 종료). 끊겼을 때는 `width`, `height`가 없다.
 - `/camera/command`: `std_msgs/String` — `"START"`, `"STOP"`
 
 ## 6. 비기능 요구사항
