@@ -4,6 +4,7 @@
     python stream_viewer.py                                   # 노트북 웹캠
     python stream_viewer.py http://<보드IP>:81/stream         # XIAO 스트림
     python stream_viewer.py http://<보드IP>:81/stream --rotate 90   # 영상이 누워 있을 때
+    python stream_viewer.py http://<보드IP>:81/stream --ros         # 상태를 /camera/status로 발행
 
 q를 누르면 종료.
 """
@@ -13,6 +14,8 @@ import time
 
 import cv2
 
+from ros_bridge import TopicPublisher
+
 # --rotate 값 → OpenCV 회전 방법 (시계 방향)
 ROTATIONS = {
     0: None,
@@ -21,6 +24,7 @@ ROTATIONS = {
     270: cv2.ROTATE_90_COUNTERCLOCKWISE,
 }
 RECONNECT_WAIT = 2.0  # 스트림이 끊겼을 때 다시 연결하기 전 기다리는 시간(초)
+STATUS_PERIOD = 1.0   # /camera/status 발행 간격(초)
 
 
 def parse_args():
@@ -29,6 +33,8 @@ def parse_args():
                    help="웹캠 번호(기본 0) 또는 스트림 주소")
     p.add_argument("--rotate", type=int, choices=ROTATIONS, default=0,
                    help="시계 방향 회전 각도 (0, 90, 180, 270)")
+    p.add_argument("--ros", action="store_true",
+                   help="1초마다 /camera/status 토픽으로 상태(연결 여부, FPS, 해상도) 발행")
     return p.parse_args()
 
 
@@ -56,8 +62,22 @@ def main():
         sys.exit(f"영상을 열 수 없습니다: {args.source}")
     print(f"연결됨: {args.source}  (q = 종료)")
 
+    status_pub = TopicPublisher("/camera/status") if args.ros else None
+    last_status = 0.0
+
+    def send_status(state, frame=None):
+        """1초에 한 번만 상태를 보낸다 (매 프레임 보내면 토픽이 넘친다)."""
+        nonlocal last_status
+        if status_pub is None or time.time() - last_status < STATUS_PERIOD:
+            return
+        last_status = time.time()
+        data = {"state": state, "source": args.source, "fps": round(fps, 1)}
+        if frame is not None:
+            data["width"], data["height"] = frame.shape[1], frame.shape[0]
+        status_pub.publish(data)
+
     fps = 0.0
-    prev = time.perf_counter()
+    prev = None  # 직전 사진이 도착한 시각
 
     while True:
         ok, frame = cap.read()
@@ -67,24 +87,29 @@ def main():
             if not is_stream:
                 print("웹캠에서 영상을 읽지 못했습니다.")
                 break
+            last_status = 0.0  # 끊김은 바로 알린다
+            send_status("disconnected")
             print(f"스트림이 끊겼습니다. {RECONNECT_WAIT:.0f}초 후 다시 연결합니다...")
             cap.release()
             time.sleep(RECONNECT_WAIT)
             cap = open_source(args.source)
-            prev = time.perf_counter()
+            prev = None
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
             continue
 
         # FPS: 직전 프레임과의 시간 간격으로 계산하고, 숫자가 튀지 않게 부드럽게(지수 평균) 만든다
+        # 첫 사진은 비교할 직전 사진이 없으니 시각만 기록하고 넘어간다
         now = time.perf_counter()
-        instant = 1.0 / max(now - prev, 1e-6)
-        fps = instant if fps == 0 else fps * 0.9 + instant * 0.1
+        if prev is not None:
+            instant = 1.0 / max(now - prev, 1e-6)
+            fps = instant if fps == 0 else fps * 0.9 + instant * 0.1
         prev = now
 
         if rotation is not None:
             frame = cv2.rotate(frame, rotation)
 
+        send_status("streaming", frame)
         draw_info(frame, fps)
         cv2.imshow("stream", frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -92,6 +117,10 @@ def main():
 
     cap.release()
     cv2.destroyAllWindows()
+    if status_pub is not None:
+        last_status = 0.0
+        send_status("stopped")
+        status_pub.close()
 
 
 if __name__ == "__main__":
